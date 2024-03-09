@@ -1,18 +1,15 @@
 #include <stdio.h>
 
-#define PI 3.141
-
 int main(){
 
-    int r;
+    int a, b;
 
-    printf("Enter integer radius of sphere: ");
-    scanf("%d", &r);
+    printf("Enter values for a and b, separated by a comma (a,b): ");
+    scanf("%d,%d", &a, &b);
 
+    int answer = a + b;
 
-    float volume = (4.0/3.0) * PI * r * r;
-
-    printf("The volume of a sphere with radius %i is %.2f", r, volume);
+    printf("Sum of %d and %d is %d", a, b, answer);
 
 
     return 0;

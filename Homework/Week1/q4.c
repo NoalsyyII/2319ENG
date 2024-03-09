@@ -1,20 +1,15 @@
 #include <stdio.h>
-#include <stdlib.h>
-
-#define STRMAX 32
 
 int main(){
 
-    float money_in;
+    int a, b;
 
-    printf("Input dollar/cents amount: ");
-    scanf("%f", &money_in);
+    printf("Enter values for a and b, separated by a comma (a,b): ");
+    scanf("%d,%d", &a, &b);
 
-    float money_out = money_in * 1.05;
+    int remainder = a % b;
 
-    printf("\nWith tax added: %.2f", money_out);
-    
-
+    printf("Remainder of %d / %d is %d", a, b, remainder);
 
     return 0;
 }
