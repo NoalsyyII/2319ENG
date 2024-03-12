@@ -1,11 +1,10 @@
 #include <stdio.h>
 
-
 int main(){
     
     float input1, input2;
 
-    printf("Enter two values, seperated by a comma (a,b): ");
+    printf("Enter two values, seperated by a comma (a,b)>>");
     scanf("%f,%f", &input1, &input2);
 
     float add = input1 + input2;

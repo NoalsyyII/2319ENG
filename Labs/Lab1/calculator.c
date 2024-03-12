@@ -4,59 +4,62 @@
 int main(){
 
     float input1, input2;
-    char choice;
+    char operation, again;
     float out;
+    
     while(1){
-    printf("Enter two values, seperated by a comma (a,b)>>");
-    scanf("%f,%f", &input1, &input2);
+        printf("Enter two values, seperated by a comma (a,b)>>");
+        scanf("%f,%f", &input1, &input2);
 
-    printf("Choose an operation\na: +\nb: -\nc: *\nd: /\ne: ++\nf: --\ng: exit\n>>");
-    scanf(" %c", &choice);
-    
+        printf("Choose an operation\na: +\nb: -\nc: *\nd: /\ne: ++\nf: --\ng: exit\n>>");
+        scanf(" %c", &operation);
+        
 
-    switch(choice){
-        case 'a':
-        out = input1 + input2;
-        printf("%f + %f = ", input1, input2);
-        break;
-        case 'b':
-        out = input1 - input2;
-        printf("%f - %f = ", input1, input2);
-        break;
-        case 'c':
-        out = input1 * input2;
-        printf("%f * %f = ", input1, input2);
-        break;
-        case 'd':
-        if(input2){
-            out = (float) input1 / input2;
-            printf("%f / %f = ", input1, input2);
+        switch(operation){
+            case 'a':
+                out = input1 + input2;
+                printf("%.2f + %.2f = %.2f", input1, input2, out);
+            break;
+            case 'b':
+                out = input1 - input2;
+                printf("%.2f - %.2f = %.2f", input1, input2, out);
+            break;
+            case 'c':
+                out = input1 * input2;
+                printf("%.2f * %.2f = %.2f", input1, input2, out);
+            break;
+            case 'd':
+                if(!input2){
+                    printf("Cannot divide by zero! Pick a new denominator>>");
+                    scanf("%f", &input2);
+                }
+                    out = (float) input1 / input2;
+                    printf("%.2f / %.2f = %.2f", input1, input2, out);
+            break;
+            case 'e':
+                out = input1 + 1;
+                printf("%.2f++ = %.2f", input1, out);
+            break;
+            case 'f':
+                out = input1 - 1;
+                printf("%.2f-- = %.2f", input1, out);
+            break;
+            case 'g':
+                exit(0);
+            break;
+            default:
+                printf("Invalid operator input\n");
+            break;
         }
-        break;
-        case 'e':
-        out = input1++;
-        printf("%f++ = ", input1);
-        break;
-        case 'f':
-        out = input1--;
-        printf("%f-- = ", input1);
-        break;
-        case 'g':
-        exit(0);
-        break;
-    }
-    
-    printf("%.2f\n", out);
 
-    char again;
-    printf("Calculate again? (y/n)>>");
-    scanf(" %c", &again);
+        printf("\nCalculate again? (y/n)>>");
+        scanf(" %c", &again);
 
-    if(again == 'y' || again == 'Y'){
-        continue;
-    } else{
-        break;
-    }
+        if(again == 'y' || again == 'Y'){
+            continue;
+        } else{
+            break;
+        }
 
     }
     return 0;
