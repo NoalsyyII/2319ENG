@@ -2,11 +2,10 @@
 
 int main(){
 
-    int a, b, c, d;
-
-    a = 6;
-    b = 13;
-
+    int a = 6;
+    int b = 13;
+    int c, d;
+    
     printf("Enter value of C: ");
     scanf("%d", &c);
 
