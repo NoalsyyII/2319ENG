@@ -1,12 +1,16 @@
 #include <stdio.h>
 
 int main(){
+    
+    int a, b;
+    float f;
 
-    int i = 1;
-    do{
-        printf("%d\n", i);
-        i++;
-    } while (i <=10);
+    a = 7;
+    b = 2;
+    
+    f = (float) a / b;
 
+    printf("F = %.2f", f);
+    
     return 0;
 }

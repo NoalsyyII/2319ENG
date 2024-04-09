@@ -2,9 +2,15 @@
 
 int main(){
 
-    for(int i = 1; i <= 10; i++){
-        printf("%d\n", i);
-    }
+    int a, b;
+
+    printf("Enter values for a and b, separated by a comma (a,b): ");
+    scanf("%d,%d", &a, &b);
+
+    int answer = a + b;
+
+    printf("Sum of %d and %d is %d", a, b, answer);
+
 
     return 0;
 }

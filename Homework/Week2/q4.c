@@ -2,13 +2,14 @@
 
 int main(){
 
-    int sum = 0;
+    int a, b;
 
-    for(int i = 1; i <= 50; i++){
-        sum += i;
-    }
-    
-    printf("Sum of numbers from 1 to 50 = %d", sum);
-    
+    printf("Enter values for a and b, separated by a comma (a,b): ");
+    scanf("%d,%d", &a, &b);
+
+    int remainder = a % b;
+
+    printf("Remainder of %d / %d is %d", a, b, remainder);
+
     return 0;
 }

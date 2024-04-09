@@ -2,13 +2,16 @@
 
 int main(){
 
-    int inputnum;
+    int input;
 
-    printf("Enter an integer number>>");
-    scanf("%d", &inputnum);
+    printf("Enter number: ");
+    scanf("%d", &input);
 
-    for(int i = 0; i < inputnum; i++){
-        printf("Hello\n");
+    if(input > 10){
+        printf("Big\n");
+    } else {
+        printf("Little\n");
     }
 
+    return 0;
 }

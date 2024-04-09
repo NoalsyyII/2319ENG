@@ -1,15 +1,18 @@
 #include <stdio.h>
 
+
 int main(){
 
-    int inputnum = 0;
+    int input;
 
-    do{
-        printf("Enter a number >>");
-        scanf("%d", &inputnum);
-    } while(inputnum != 7);
+    printf("Input number for checking: ");
+    scanf("%d", &input);
 
-    printf("Goodbye");
+    if(input % 2 == 0){
+        printf("%d is even!", input);
+    } else {
+        printf("%d is odd!", input);
+    }
 
     return 0;
 }

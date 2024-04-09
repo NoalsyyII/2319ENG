@@ -1,12 +1,18 @@
 #include <stdio.h>
 
+
 int main(){
 
-    int i = 1;
+    int a = 6;
+    int b = 13;
+    int c, d;
+    
+    printf("Enter value of C: ");
+    scanf("%d", &c);
 
-    while(i <= 10){
-        printf("%d\n", i);
-        i++;
-    }
+    d = a + b + c;
+
+    printf("D = %d", d);
+
     return 0;
 }

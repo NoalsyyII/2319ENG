@@ -1,10 +1,13 @@
+#include <stdio.h>
 
-int min(int num1, int num2){
+int main(){
 
-    if(num1 < num2){
-        return num1;
-    } else{
-        return num2;
+    int i = 1;
+
+    while(i <= 10){
+        printf("%d\n", i);
+        i++;
     }
-
+    
+    return 0;
 }
