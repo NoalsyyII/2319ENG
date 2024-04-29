@@ -16,7 +16,7 @@ void manageBooks();
 void manageUsers();
 
 //Shared Functions
-int deleteFromRecords(int, int*, char*(*), int*);
+int deleteFromRecords(int, int*, char*[MAX_ARRLEN], int*);
 
 //Book management deliverables
 void addBook();
@@ -235,7 +235,7 @@ void deleteBook(){
 
 }
 
-int deleteFromRecords(int _IDtodelete, int* idlist, char* namelist, int* counter){
+int deleteFromRecords(int _IDtodelete, int* idlist, char* namelist[MAX_ARRLEN], int* counter){
     int index = -1;
     for(int i = 0; i < *counter; i++){
         if(idlist[i] == _IDtodelete){
