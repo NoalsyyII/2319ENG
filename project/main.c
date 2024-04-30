@@ -16,7 +16,8 @@ void manageBooks();
 void manageUsers();
 
 //Shared Functions
-int deleteFromRecords(int, int*, char*[MAX_ARRLEN], int*);
+int deleteFromRecords(int, int*, char[][MAX_STRING], int*);
+int findMe(int, int*, int);
 
 //Book management deliverables
 void addBook();
@@ -43,6 +44,7 @@ int main(){
 }
 
 void mainMenu(int* mainloopflag){
+//Handles main menu functionality, takes a pointer to the main menu loop flag as input.
     int mainchoice;
 
     void (*mainselection)();
@@ -62,13 +64,14 @@ void mainMenu(int* mainloopflag){
                 break;
             default:
                 *mainloopflag = 0;
-                break;
+                return;
         }
         (*mainselection)();
     }
 }
 
 void manageUsers(){
+//Handles user management menu functionality
     //system("cls");
     
     int userloopflag = 1, userchoice;
@@ -96,9 +99,8 @@ void manageUsers(){
                 userselection = &deleteUser;
                 break;
             default:
-                //system("cls");
                 userloopflag = 0;
-                break;
+                return;
         }
 
         (*userselection)();
@@ -106,6 +108,7 @@ void manageUsers(){
 }
 
 void manageBooks(){
+//Handles book management menu functionality
     //system("cls");
     
     int bookloopflag = 1, bookchoice;
@@ -133,15 +136,15 @@ void manageBooks(){
                 bookselection = &deleteBook;
                 break;
             default:
-                //system("cls");
                 bookloopflag = 0;
-                break;
+                return;
         }
         (*bookselection)();
     }
 }
 
 void viewAllUsers(){
+//Iterates over user arrays to print all records
     //system("cls");
     
     if(!usercount){
@@ -157,6 +160,7 @@ void viewAllUsers(){
 }
 
 void registerUser(){
+//Handles addition menu AND array update for new users.
     printf("Register New User:\n");
     char tempname[MAX_STRING];
 
@@ -176,14 +180,56 @@ void registerUser(){
 }
 
 void updateUser(){
-    printf("Updating user!\n");
+//Handles menu for updating user, passing to appropriate functions where necessary.
+    int searchID, index, choice;
+    printf("Enter user ID to change details >>");
+    scanf("%d", &searchID);
+    
+    if((index = findMe(searchID, userids, usercount)) == -1){
+        printf("User with ID %d not found, try again", searchID);
+        return;
+    }
+    
+    printf("User found\nprintf(Name: %s | ID: %d\n", usernames[index], userids[index]);
+    printf("1: Update ID\n2: Update Name\n3: Cancel\n>>", bookcount);
+    scanf("%d", &choice);
+
+    switch(choice){
+            case 1:
+                userselection = &viewAllUsers;
+                break;
+            case 2:
+                userselection = &registerUser;
+                break;
+            case 3:
+                userselection = &updateUser;
+                break;
+            case 4:
+                userselection = &deleteUser;
+                break;
+            default:
+                return;
+        }
+
+
 }
 
 void deleteUser(){
-    printf("Deleting user!\n");
+//Handles delete user menu, passing values to generic handler functions for deletion.
+    printf("Delete User:\n");
+    int tempID;
+
+    printf("Enter User ID >>");
+    scanf(" %d", &tempID);
+
+    if(deleteFromRecords(tempID, userids, usernames, &usercount)){
+        printf("ISBN %d deleted successfully!\n", tempID);
+    }
+
 }
 
 void viewAllBooks(){
+//Iterates over arrays to display all records
     if(!bookcount){
         printf("ERROR: No records to display!\nReturning to main menu...");
         Sleep(1500);
@@ -196,12 +242,17 @@ void viewAllBooks(){
 }
 
 void addBook(){
+//Menu function for adding book, checks for duplicate additions before updating arrays.
     printf("Add New Title:\n");
     int tempISBN;
     char temptitle[MAX_STRING];
 
     printf("Enter Book ISBN >>");
     scanf(" %d", &tempISBN);
+    if(findMe(tempISBN, bookids, bookcount) != -1){
+        printf("Book with ISBN %d already exists!, try again\n", tempISBN);
+        return;
+    }
 
     while ((getchar()) != '\n'); // clear input buffer
 
@@ -223,6 +274,7 @@ void updateBook(){
 }
 
 void deleteBook(){
+//Handles delete user menu, passing values to generic handler functions for deletion.
     printf("Delete Title:\n");
     int tempISBN;
 
@@ -230,29 +282,37 @@ void deleteBook(){
     scanf(" %d", &tempISBN);
 
     if(deleteFromRecords(tempISBN, bookids, titles, &bookcount)){
-        printf("ISBN %d deleted successfully!");
+        printf("ISBN %d deleted successfully!\n", tempISBN);
     }
 
 }
 
-int deleteFromRecords(int _IDtodelete, int* idlist, char* namelist[MAX_ARRLEN], int* counter){
-    int index = -1;
-    for(int i = 0; i < *counter; i++){
-        if(idlist[i] == _IDtodelete){
-            index = i;
-        }
-    }
+int deleteFromRecords(int _IDtodelete, int* idlist, char namelist[][MAX_STRING], int* counter){
+//Generic handler function to delete from records, takes record arrays and an ID for deletion
+    int index = findMe(_IDtodelete, idlist, *counter);
 
     if(index == -1){
         return 0;
     }
 
-    for(int i = index - 1; i < *counter - 1; i++){
+    for(int i = index; i < *counter - 1; i++){
         idlist[i] = idlist[i + 1];
-        namelist[i] = namelist[i + 1];
+        strcpy(namelist[i], namelist[i + 1]);
     }
 
-    *counter--;
+    *counter -= 1;
 
     return 1;
+}
+
+int findMe(int ID, int* idlist, int _counter){
+//Returns index of a given ID for any ID list provided
+    int index = -1;
+    for(int i = 0; i < _counter; i++){
+        if(idlist[i] == ID){
+            index = i;
+        }
+    }
+    return index;
+
 }

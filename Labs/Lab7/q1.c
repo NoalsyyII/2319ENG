@@ -59,7 +59,7 @@ void addEmployee(){
     fgets(tempdept, MAX_STRING, stdin);
     tempdept[strcspn(tempdept, "\n")] = 0;
 
-    printf("Enter Employee Salary >>");
+    printf("Enter Employee Salary >>($)");
     scanf(" %f", &tempsalary);
 
     records[employeeamount].empID = tempID;

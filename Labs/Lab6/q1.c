@@ -57,15 +57,15 @@ void displayAllNotes(){
     }
 
     while(fgets(onenote, 32, master) != NULL){
-        sscanf(onenote, "%s %*s", allnotes[i++]);
+        sscanf(onenote, "%[^\n]%*c", allnotes[i++]);
     }
     
     fclose(master);
 
     numnotes = i - 1;
 
-    for(i = 0; i < numnotes; i++){
-        printf("Note %d : %s\n", i, allnotes[i]);
+    for(i = 0; i < numnotes + 1; i++){
+        printf("Note %d : %s\n", i + 1, allnotes[i]);
     }
 
 }
