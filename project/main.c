@@ -167,7 +167,37 @@ void registerUser(){
 
 void updateUser(){
     //placeholder
-    printf("Updating User");
+    int searchID, index, choice;
+    printf("Enter user ID to change details >>");
+    scanf("%d", &searchID);
+    
+    if((index = findMe(searchID, usercount, 'u')) == -1){
+        printf("User with ID %d not found, try again", searchID);
+        return;
+    }
+    
+    printf("User found\nID: %d | Name: %s\n", users[index].ID, users[index].name);
+    printf("1: Update ID\n2: Update Name\n3: Cancel\n>>", bookcount);
+    scanf("%d", &choice);
+
+    switch(choice){
+        case 1: 
+            int tempID;
+            printf("Enter new ID >>");
+            scanf("%d", &tempID);
+            users[index].ID = tempID;
+            printf("User ID updated successfully!");
+            break;
+        case 2:
+            char tempname[MAX_STRING];
+            printf("Enter new name >>");
+            while ((getchar()) != '\n');
+            fgets(tempname, MAX_STRING - 1, stdin);
+            tempname[strcspn(tempname, "\n")] = 0;
+            strcpy(users[index].name, tempname);
+            printf("User name updated successfully!");
+            break;
+    }
     return;
 }
 
