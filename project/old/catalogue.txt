@@ -1,0 +1,3 @@
+1234	bookone	author1	0
+5678	bookone	author2	1
+7890	bookthree	author3	0
