@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <strings.h>
+#include <string.h>
 #include <windows.h>
 
-#define MAX_STRING 50
+#define MAX_STRING 100
 #define MAX_ARRLEN 100
 
 typedef struct book {
@@ -49,10 +49,22 @@ int loadBooks();
 int loadUsers();
 int saveBook(Book);
 int saveUser(User);
+int deleteBookFromDisk(int);
+int deleteUserFromDisk(int);
 
 int main(){
+    
+    if(!loadBooks()){
+        printf("Error loading Books, exiting...");
+        return 1;
+    }
+
+    if(!loadUsers()){
+        printf("Error loading users, exiting...");
+        return 1;
+    }
+    
     printf("Welcome to the library management system!\n");
-    Sleep(1000);
     int mainloopflag = 1;
 
     while(mainloopflag){
@@ -94,7 +106,7 @@ void manageUsers(){
 
         //system("cls");
 
-        printf("USER MANAGEMENT MENU\nThere are %d current users\n1: View all users\n2: Register new user\n3: Update user\n4: Delete user\n5: Back to main menu\n>>", usercount);
+        printf("\nUSER MANAGEMENT MENU\nThere are %d current users\n1: View all users\n2: Register new user\n3: Update user\n4: Delete user\n5: Back to main menu\n>>", usercount);
         scanf("%d", &userchoice);
 
         if(userchoice < 1 || userchoice > 4){
@@ -117,7 +129,7 @@ void manageBooks(){
 
         //system("cls");
 
-        printf("BOOK MANAGEMENT MENU\nThere are %d current titles\n1: View all titles\n2: Register new title\n3: Update book information\n4: Delete title\n5: Back to main menu\n>>", bookcount);
+        printf("\nBOOK MANAGEMENT MENU\nThere are %d current titles\n1: View all titles\n2: Register new title\n3: Update book information\n4: Delete title\n5: Back to main menu\n>>", bookcount);
         scanf("%d", &bookchoice);
 
         if(bookchoice < 1 || bookchoice > 4){
@@ -139,8 +151,10 @@ void viewAllUsers(){
         return;
     }
 
+    printf("\n");
+
     for(int i = 0; i < usercount; i++){
-        printf("ID: %d | Name: %s\n", users[i].ID, users[i].name);
+        printf("ID: %02d | Name: %s\n", users[i].ID, users[i].name);
     }
 
 }
@@ -148,7 +162,19 @@ void viewAllUsers(){
 void registerUser(){
 //Handles addition menu AND array update for new users.
     printf("Register New User:\n");
+
+    int tempID;
     char tempname[MAX_STRING];
+
+    printf("Enter new ID >>");
+    scanf("%d", &tempID);
+
+    if(findMe(tempID, usercount, 'u') != -1){
+        printf("Book with ISBN %d already exists!, try again\n", tempID);
+        return;
+    } else if(tempID == 0){
+        printf("Error, ID cannot be 0, try again\n");
+    }
 
     while ((getchar()) != '\n'); // clear input buffer
 
@@ -160,13 +186,19 @@ void registerUser(){
     users[usercount].ID = usercount;
     strcpy(users[usercount].name, tempname);
 
+    if(!saveUser(users[usercount])){
+        printf("Error saving to disk\n");
+        return;
+    }
+
     printf("%s added sucessfully!\n", tempname);
 
     usercount++;
 }
 
 void updateUser(){
-    //placeholder
+    //Handles menu and updating of user in array
+    // TODO: Edit users in users.txt
     int searchID, index, choice;
     printf("Enter user ID to change details >>");
     scanf("%d", &searchID);
@@ -183,18 +215,31 @@ void updateUser(){
     switch(choice){
         case 1: 
             int tempID;
+
             printf("Enter new ID >>");
             scanf("%d", &tempID);
+
+            if(tempID == 0){
+                printf("Error: ID cannot be 0\nReturning to parent menu...\n");
+                return;
+            }
+
             users[index].ID = tempID;
+
             printf("User ID updated successfully!");
             break;
         case 2:
             char tempname[MAX_STRING];
+
             printf("Enter new name >>");
+
             while ((getchar()) != '\n');
+
             fgets(tempname, MAX_STRING - 1, stdin);
+            
             tempname[strcspn(tempname, "\n")] = 0;
             strcpy(users[index].name, tempname);
+
             printf("User name updated successfully!");
             break;
     }
@@ -222,9 +267,9 @@ void viewAllBooks(){
         Sleep(1500);
         return;
     }
-
+    printf("\n");
     for(int i = 0; i < bookcount; i++){
-        printf("ISBN: %d | Title: %s | Author: %s | Borrowed: %s\n", books[i].ISBN, books[i].title, books[i].author, (books[i].isborrowed ? "Yes" : "No") );
+        printf("ISBN: %d | Title: %-40s | Author: %-30s | Borrowed: %s\n", books[i].ISBN, books[i].title, books[i].author, (books[i].isborrowed ? "Yes" : "No") );
     }
 }
 
@@ -239,6 +284,8 @@ void addBook(){
     if(findMe(tempISBN, bookcount, 'b') != -1){
         printf("Book with ISBN %d already exists!, try again\n", tempISBN);
         return;
+    } else if(tempISBN == 0){
+        printf("Error, ISBN cannot be 0, try agian\n");
     }
 
     while ((getchar()) != '\n'); // clear input buffer
@@ -256,6 +303,11 @@ void addBook(){
     books[bookcount].ISBN = tempISBN;
     strcpy(books[bookcount].title, temptitle);
     strcpy(books[bookcount].author, tempauthor);
+
+    if(!saveBook(books[bookcount])){
+        printf("Error saving to disk");
+        return;
+    }
 
     printf("%s added sucessfully!\n", temptitle);
 
@@ -289,10 +341,18 @@ int deleteFromRecords(int _IDtodelete, int *counter, char mode){
     }
 
     if(mode == 'b'){
+        if(!deleteBookFromDisk(_IDtodelete)){
+            return 0;
+        }
+
         for(int i = index; i < *counter - 1; i++){
         books[i] = books[i + 1];
     }
     } else{
+        if(!deleteUserFromDisk(_IDtodelete)){
+            return 0;
+        }
+
         for(int i = index; i < *counter - 1; i++){
         users[i] = users[i + 1];
     }
@@ -322,6 +382,148 @@ int findMe(int ID, int _counter, char mode){
     }
 
     return index;
+
+}
+
+int saveBook(Book tosave){
+    FILE *catalogue = NULL;
+
+    if((catalogue = fopen("catalogue.txt", "a")) == NULL){
+        return 0;
+    }
+
+    fprintf(catalogue, "%d\t%s\t%s\t%d\n",tosave.ISBN, tosave.title, tosave.author, tosave.isborrowed);
+
+    fclose(catalogue);
+
+    return 1;
+
+}
+
+int saveUser(User tosave){
+    FILE *userlist = NULL;
+
+    if((userlist = fopen("users.txt", "a")) == NULL){
+        return 0;
+    }
+
+    fprintf(userlist, "%d\t%s\n",tosave.ID, tosave.name);
+
+    fclose(userlist);
+
+    return 1;
+}
+
+int loadBooks(){
+    FILE *catalogue = NULL;
+
+    char linebuffer[MAX_STRING];
+
+    Book tempbook;
+
+    if((catalogue = fopen("catalogue.txt", "r")) == NULL){
+        return 0;
+    }
+
+    while(fgets(linebuffer, MAX_STRING, catalogue) && bookcount < MAX_ARRLEN){
+        sscanf(linebuffer, "%d\t%49[^\t]\t%49[^\t]\t%d", &tempbook.ISBN, tempbook.title, tempbook.author, &tempbook.isborrowed);
+        
+        if(tempbook.ISBN == 0){continue;}
+
+       books[bookcount] = tempbook;
+        bookcount++;
+    }
+    
+    fclose(catalogue);
+
+    return 1;
+}
+
+int loadUsers(){    
+    FILE *userlist = NULL;
+
+    char linebuffer[MAX_STRING];
+    User tempuser;
+
+    if((userlist = fopen("users.txt", "r")) == NULL){
+        return 0;
+    }
+
+    while(fgets(linebuffer, MAX_STRING, userlist) && usercount < MAX_ARRLEN){
+        sscanf(linebuffer, "%d\t%[^\n]", &tempuser.ID, tempuser.name);
+        
+        if(tempuser.ID == 0){continue;}
+
+        users[usercount] = tempuser;
+        usercount++;
+    }
+
+    fclose(userlist);
+
+    return 1;
+}
+
+int deleteUserFromDisk(int _IDtodelete){
+//Handler function to delete user from file, returns 1 if user is found and deleted, 0 otherwise.
+    FILE *userlist = NULL, *newuserlist = NULL;
+
+    char linebuffer[MAX_STRING];
+    int checkID, lineindex = 0, status = 0;
+
+    if((userlist = fopen("users.txt", "r")) == NULL || (newuserlist = fopen("temp.txt", "w")) == NULL){
+        return status;
+    }
+
+    while(fgets(linebuffer, MAX_STRING, userlist)){
+        sscanf(linebuffer, "%d", &checkID);
+
+        if(checkID == _IDtodelete){
+            status = 1;
+            continue;
+        }
+
+        fprintf(newuserlist, "%s", linebuffer);
+    }
+
+    fclose(userlist);
+    fclose(newuserlist);
+
+    remove("users.txt");
+    rename("temp.txt", "users.txt");
+
+    return status;
+
+}
+
+int deleteBookFromDisk(int _IDtodelete){
+//Handler function to delete book from file, returns 1 if book is found and deleted, 0 otherwise.
+    FILE *catalogue = NULL, *newcatalogue = NULL;
+
+    char linebuffer[MAX_STRING];
+    int checkID, lineindex = 0, status = 0;
+
+    if((catalogue = fopen("catalogue.txt", "r")) == NULL || (newcatalogue = fopen("temp.txt", "w")) == NULL){
+        return status;
+    }
+
+    while(fgets(linebuffer, MAX_STRING, catalogue)){
+        sscanf(linebuffer, "%d", &checkID);
+
+        if(checkID == _IDtodelete){
+            status = 1;
+            continue;
+        }
+
+        fprintf(newcatalogue, "%s", linebuffer);
+    }
+
+    fclose(catalogue);
+    fclose(newcatalogue);
+
+    remove("catalogue.txt");
+    rename("temp.txt", "catalogue.txt");
+
+    return status;
 
 }
 
