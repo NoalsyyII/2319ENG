@@ -1,7 +1,6 @@
 100001	To Kill a Mockingbird	Harper Lee	1
 100002	The Great Gatsby	F. Scott Fitzgerald	0
 100003	Pride and Prejudice	Jane Austen	0
-100004	Moby-Dick	Herman Melville	1
 100005	1984	George Orwell	0
 100006	The Lord of the Rings	J.R.R. Tolkien	1
 100007	Brave New World	Aldous Huxley	0
@@ -15,7 +14,6 @@
 100015	Crime and Punishment	Fyodor Dostoevsky	0
 100016	The Iliad	Homer	1
 100017	The Adventures of Huckleberry Finn	Mark Twain	0
-100018	War and Peace	Leo Tolstoy	1
 100019	Middlemarch	George Eliot	0
 100020	Anna Karenina	Leo Tolstoy	0
 100021	The Brothers Karamazov	Fyodor Dostoevsky	1
@@ -23,3 +21,5 @@
 100023	The Scarlet Letter	Nathaniel Hawthorne	1
 100024	Wuthering Heights	Emily Bronte	0
 100025	The Sun Also Rises	Ernest Hemingway	1
+100018	War and Peace	Noah Simpson	1
+100004	Moby-Dong	Herman Melville	1

@@ -170,7 +170,7 @@ void registerUser(){
     scanf("%d", &tempID);
 
     if(findMe(tempID, usercount, 'u') != -1){
-        printf("Book with ISBN %d already exists!, try again\n", tempID);
+        printf("User with ID %d already exists!, try again\n", tempID);
         return;
     } else if(tempID == 0){
         printf("Error, ID cannot be 0, try again\n");
@@ -183,7 +183,7 @@ void registerUser(){
     
     tempname[strcspn(tempname, "\n")] = 0; //cuts off newline char
 
-    users[usercount].ID = usercount;
+    users[usercount].ID = tempID;
     strcpy(users[usercount].name, tempname);
 
     if(!saveUser(users[usercount])){
@@ -197,8 +197,7 @@ void registerUser(){
 }
 
 void updateUser(){
-    //Handles menu and updating of user in array
-    // TODO: Edit users in users.txt
+    //Handles menu and updating of user in array and files
     int searchID, index, choice;
     printf("Enter user ID to change details >>");
     scanf("%d", &searchID);
@@ -243,6 +242,10 @@ void updateUser(){
             printf("User name updated successfully!");
             break;
     }
+
+    deleteUserFromDisk(searchID);
+    saveUser(users[index]);
+
     return;
 }
 
@@ -315,8 +318,74 @@ void addBook(){
 }
 
 void updateBook(){
-    printf("Updating book!\n");
-}
+    //Handles menu and updating of book in array and files
+    int searchID, index, choice;
+    printf("Enter book ISBN to change details >>");
+    scanf("%d", &searchID);
+    
+    if((index = findMe(searchID, bookcount, 'b')) == -1){
+        printf("Book with ISBN %d not found, try again", searchID);
+        return;
+    }
+    
+    printf("ISBN: %d | Title: %-40s | Author: %-30s | Borrowed: %s\n", books[index].ISBN, books[index].title, books[index].author, (books[index].isborrowed ? "Yes" : "No"));
+    printf("1: Update ISBN\n2: Update Title\n3: Update Author\n4: Exit\n>>", bookcount);
+    scanf("%d", &choice);
+
+    switch(choice){
+        case 1: 
+            int tempISBN;
+
+            printf("Enter new ISBN >>");
+            scanf("%d", &tempISBN);
+
+            if(tempISBN == 0){
+                printf("Error: ISBN cannot be 0\nReturning to parent menu...\n");
+                return;
+            }
+
+            books[index].ISBN = tempISBN;
+
+            printf("Book ISBN updated successfully!");
+            break;
+        case 2:
+            char temptitle[MAX_STRING];
+
+            printf("Enter new title >>");
+
+            while ((getchar()) != '\n');
+
+            fgets(temptitle, MAX_STRING - 1, stdin);
+            
+            temptitle[strcspn(temptitle, "\n")] = 0;
+            strcpy(books[index].title, temptitle);
+
+            printf("Book title updated successfully!");
+            break;
+        case 3:
+            char tempauthor[MAX_STRING];
+
+            printf("Enter new author >>");
+
+            while ((getchar()) != '\n');
+
+            fgets(tempauthor, MAX_STRING - 1, stdin);
+            
+            tempauthor[strcspn(tempauthor, "\n")] = 0;
+            strcpy(books[index].author, tempauthor);
+
+            printf("Book author updated successfully!");
+            break;
+        default:
+            return;
+
+    }
+
+    deleteBookFromDisk(searchID);
+    saveBook(books[index]);
+
+    return;
+} 
 
 void deleteBook(){
 //Handles delete user menu, passing values to generic handler functions for deletion.
