@@ -3,8 +3,13 @@
 #include <string.h>
 #include <windows.h>
 
+//TODO: Add a way to store and retrieve borrowed book info from users.txt
+
 #define MAX_STRING 100
 #define MAX_ARRLEN 100
+#define MAX_BORROWED 10
+#define INIT_BOOK_CAPACITY 25
+#define INIT_USER_CAPACITY 25
 
 typedef struct book {
     int ISBN;
@@ -16,14 +21,15 @@ typedef struct book {
 typedef struct user {
     int ID;
     char name[MAX_STRING];
-    Book borrowedbooks[MAX_ARRLEN];
+    int borrowcount;
+    int borrowedbooks[MAX_BORROWED];
 } User;
 
-int bookcount = 0, usercount = 0;
-Book books[MAX_ARRLEN];
-User users[MAX_ARRLEN];
+int bookcount = 0, usercount = 0, bookcapacity = INIT_BOOK_CAPACITY, usercapacity = INIT_USER_CAPACITY;
+Book* books = NULL;
+User* users = NULL;
 
-//Menu
+//Menus
 void mainMenu(int*);
 void manageBooks();
 void manageUsers();
@@ -37,6 +43,8 @@ void addBook();
 void viewAllBooks();
 void updateBook();
 void deleteBook();
+void borrowBook();
+void returnBook();
 
 //User Management
 void registerUser();
@@ -51,6 +59,10 @@ int saveBook(Book);
 int saveUser(User);
 int deleteBookFromDisk(int);
 int deleteUserFromDisk(int);
+
+//Memory Management
+void checkAndResize(char);
+void freeAll();
 
 int main(){
     
@@ -70,6 +82,8 @@ int main(){
     while(mainloopflag){
         mainMenu(&mainloopflag);
     }
+    
+    freeAll();
 
     return 0;
 }
@@ -183,6 +197,8 @@ void registerUser(){
     
     tempname[strcspn(tempname, "\n")] = 0; //cuts off newline char
 
+    checkAndResize('u');
+
     users[usercount].ID = tempID;
     strcpy(users[usercount].name, tempname);
 
@@ -259,6 +275,8 @@ void deleteUser(){
 
     if(deleteFromRecords(tempID, &usercount, 'u')){
         printf("User ID: %d deleted successfully!\n", tempID);
+    }else{
+        printf("User with ID %d not found!", tempID);
     }
 
 }
@@ -302,6 +320,8 @@ void addBook(){
     fgets(tempauthor, MAX_STRING - 1, stdin);
     
     tempauthor[strcspn(tempauthor, "\n")] = 0; //cuts off newline char
+
+    checkAndResize('b');
 
     books[bookcount].ISBN = tempISBN;
     strcpy(books[bookcount].title, temptitle);
@@ -397,6 +417,8 @@ void deleteBook(){
 
     if(deleteFromRecords(tempISBN, &bookcount, 'b')){
         printf("ISBN %d deleted successfully!\n", tempISBN);
+    } else{
+        printf("Book with ISBN %d not found!", tempISBN);
     }
 
 }
@@ -426,6 +448,8 @@ int deleteFromRecords(int _IDtodelete, int *counter, char mode){
         users[i] = users[i + 1];
     }
     }
+
+    checkAndResize(mode);
 
     *counter -= 1;
 
@@ -483,6 +507,42 @@ int saveUser(User tosave){
     return 1;
 }
 
+void borrowBook(){
+    int tempID, tempISBN;
+
+    printf("Enter borrowing user's ID >>");
+    scanf("%d", &tempID);
+
+    int userindex = findMe(tempID, usercount, 'u');
+    int userborrows = users[userindex].borrowcount;
+
+    if(userindex == -1){
+        printf("No user with ID %d found!", tempID);
+        return;
+    } else if(userborrows + 1 > MAX_BORROWED){
+        printf("Too many books already borrowed!");
+        return;
+    }
+
+    printf("Enter book ISBN >>");
+    scanf("%d", &tempISBN);
+
+    int bookindex = findMe(tempISBN, bookcount, 'b');
+
+    if(bookindex == -1){
+        printf("No book with ISBN %d found!", tempISBN);
+        return;
+    } else if(books[bookindex].isborrowed){
+        printf("Book with ISBN %d is already borrowed, return it before borrowing again", tempISBN);
+        return;
+    }
+
+    userborrows = ++users[userindex].borrowcount;
+    users[userindex].borrowedbooks[userborrows] = tempISBN;
+
+    return;
+}
+
 int loadBooks(){
     FILE *catalogue = NULL;
 
@@ -494,12 +554,20 @@ int loadBooks(){
         return 0;
     }
 
+    books = (Book *)malloc(bookcapacity * sizeof(Book));
+
+    if(books == NULL){
+        return 0;
+    }
+
     while(fgets(linebuffer, MAX_STRING, catalogue) && bookcount < MAX_ARRLEN){
         sscanf(linebuffer, "%d\t%49[^\t]\t%49[^\t]\t%d", &tempbook.ISBN, tempbook.title, tempbook.author, &tempbook.isborrowed);
         
         if(tempbook.ISBN == 0){continue;}
 
-       books[bookcount] = tempbook;
+        checkAndResize('b');
+
+        books[bookcount] = tempbook;
         bookcount++;
     }
     
@@ -518,10 +586,19 @@ int loadUsers(){
         return 0;
     }
 
+    users = (User *)malloc(usercapacity * sizeof(User));
+
+    if(users == NULL){
+        return 0;
+    }
+
+
     while(fgets(linebuffer, MAX_STRING, userlist) && usercount < MAX_ARRLEN){
         sscanf(linebuffer, "%d\t%[^\n]", &tempuser.ID, tempuser.name);
         
         if(tempuser.ID == 0){continue;}
+
+        checkAndResize('u');
 
         users[usercount] = tempuser;
         usercount++;
@@ -594,6 +671,46 @@ int deleteBookFromDisk(int _IDtodelete){
 
     return status;
 
+}
+
+void checkAndResize(char mode){
+    if(mode == 'b'){
+
+        if(bookcount + 1 == bookcapacity){
+            bookcapacity *= 2;
+            books = realloc(books, bookcapacity * sizeof(Book));
+
+        } else if((float)bookcount < (1.0/4.0) * (float)bookcapacity){
+            bookcapacity /= 2;
+            books = realloc(books, bookcapacity * sizeof(Book));
+        }
+
+        if(books == NULL){
+                exit(1);
+            }
+
+    } else{
+
+        if(usercount + 1 == usercapacity){
+            usercapacity *= 2;
+            users = realloc(users, usercapacity * sizeof(User));
+
+            
+        } else if((float)usercount < (1.0/4.0) * (float)usercapacity){
+            usercapacity /= 2;
+            users = realloc(users, usercapacity * sizeof(User));
+        }
+
+        if(users == NULL){
+                exit(1);
+            }
+
+    }
+}
+
+void freeAll(){
+    free(books);
+    free(users);
 }
 
 
