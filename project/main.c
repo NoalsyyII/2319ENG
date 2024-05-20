@@ -3,7 +3,10 @@
 #include <string.h>
 #include <windows.h>
 
-//TODO: Add a way to store and retrieve borrowed book info from users.txt
+//TODO: Add strtok() functionality to addBook() -> super useful!
+//TODO: Disallow deletion of book when book.isborrowed!
+//TODO: Add padding and titles display in viewAllUsers()
+//TODO: Maybe make books see what user has borrowed them? Might be stupid
 
 #define MAX_STRING 100
 #define MAX_ARRLEN 100
@@ -137,16 +140,16 @@ void manageBooks(){
     //system("cls");
     int bookloopflag = 1, bookchoice;
 
-    void (*bookoptions[4])() = {&viewAllBooks, &addBook, &updateBook, &deleteBook};
+    void (*bookoptions[6])() = {&viewAllBooks, &addBook, &updateBook, &deleteBook, &borrowBook, &returnBook};
 
     while(bookloopflag){
 
         //system("cls");
 
-        printf("\nBOOK MANAGEMENT MENU\nThere are %d current titles\n1: View all titles\n2: Register new title\n3: Update book information\n4: Delete title\n5: Back to main menu\n>>", bookcount);
+        printf("\nBOOK MANAGEMENT MENU\nThere are %d current titles\n1: View all titles\n2: Register new title\n3: Update book information\n4: Delete title\n5: Borrow book\n6: Return book\n7: Back to main menu\n>>", bookcount);
         scanf("%d", &bookchoice);
 
-        if(bookchoice < 1 || bookchoice > 4){
+        if(bookchoice < 1 || bookchoice > 6){
             bookloopflag = 0;
             return;
         }
@@ -168,7 +171,15 @@ void viewAllUsers(){
     printf("\n");
 
     for(int i = 0; i < usercount; i++){
-        printf("ID: %02d | Name: %s\n", users[i].ID, users[i].name);
+        printf("ID: %02d | Name: %s | Borrowed Books: ", users[i].ID, users[i].name);
+        for(int j = 0; j < users[i].borrowcount; i++){
+            printf("%d", users[i].borrowedbooks[j]);
+            if(j != users[i].borrowcount - 1){
+                printf(",");
+            }
+        }
+        printf("\n");
+
     }
 
 }
@@ -500,7 +511,18 @@ int saveUser(User tosave){
         return 0;
     }
 
-    fprintf(userlist, "%d\t%s\n",tosave.ID, tosave.name);
+    fprintf(userlist, "%d\t%s\t",tosave.ID, tosave.name);
+
+    if(tosave.borrowcount){
+        for(int i = 0; i < tosave.borrowcount; i++){
+            fprintf(userlist, "%d", tosave.borrowedbooks[i]);
+            if(i != tosave.borrowcount - 1){
+                fprintf(userlist, "\t");
+            }
+        }
+    }
+
+    fprintf(userlist, "\n");
 
     fclose(userlist);
 
@@ -537,10 +559,76 @@ void borrowBook(){
         return;
     }
 
-    userborrows = ++users[userindex].borrowcount;
-    users[userindex].borrowedbooks[userborrows] = tempISBN;
+    users[userindex].borrowedbooks[users[userindex].borrowcount] = tempISBN;
+    users[userindex].borrowcount++;
+    books[bookindex].isborrowed = 1;
+
+    printf("Book %d borrowed successfully!", users[userindex].borrowedbooks[userborrows]);
+
+
+    deleteBookFromDisk(books[bookindex].ISBN);
+    saveBook(books[bookindex]);
+    deleteUserFromDisk(tempID);
+    saveUser(users[userindex]);
 
     return;
+}
+
+void returnBook(){
+    int tempID, tempISBN;
+
+    printf("Enter borrowing user's ID >>");
+    scanf("%d", &tempID);
+
+    int userindex = findMe(tempID, usercount, 'u');
+    int userborrows = users[userindex].borrowcount;
+
+    if(userindex == -1){
+        printf("No user with ID %d found!", tempID);
+        return;
+    } else if(userborrows + 1 > MAX_BORROWED){
+        printf("No books borrowed!");
+        return;
+    }
+
+    printf("Enter book ISBN >>");
+    scanf("%d", &tempISBN);
+
+    int bookindex = findMe(tempISBN, bookcount, 'b');
+
+    if(bookindex == -1){
+        printf("No book with ISBN %d found!", tempISBN);
+        return;
+    } else if(!books[bookindex].isborrowed){
+        printf("Book with ISBN %d is not borrowed!", tempISBN);
+        return;
+    }
+
+    int bookpresent = 0;
+    for(int i = 0; i < users[userindex].borrowcount; i++){
+        if(users[userindex].borrowedbooks[i] == tempISBN){
+            bookpresent = 1;
+
+            for (int j = i; j < users[userindex].borrowcount - 1; j++){
+                users[userindex].borrowedbooks[j] = users[userindex].borrowedbooks[j + 1];
+            }
+            users[userindex].borrowcount--;
+            break;
+        }
+    }
+
+    if(!bookpresent){
+        printf("User %d has no book with ISBN %d!", tempID, tempISBN);
+        return;
+    }
+
+    books[bookindex].isborrowed = 0;
+
+    deleteUserFromDisk(tempID);
+    saveUser(users[userindex]);
+
+    printf("Book %d returned successfully!", tempISBN);
+
 }
 
 int loadBooks(){
@@ -594,10 +682,27 @@ int loadUsers(){
 
 
     while(fgets(linebuffer, MAX_STRING, userlist) && usercount < MAX_ARRLEN){
-        sscanf(linebuffer, "%d\t%[^\n]", &tempuser.ID, tempuser.name);
+        //sscanf(linebuffer, "%d\t%[^\n]", &tempuser.ID, tempuser.name);
+        char* token = strtok(linebuffer, "\t"); // Splits linebuffer by tab-delimiter!!!
         
-        if(tempuser.ID == 0){continue;}
+        tempuser.ID = atoi(token); // read first token into ID
 
+        if(tempuser.ID == 0){
+            continue;
+        }
+
+        token = strtok(NULL, "\t"); // returns the next token found before the next tab character
+
+        strncpy(tempuser.name, token, MAX_STRING - 1); // copy MAX_STRING - 1 chars into user name
+        tempuser.name[strcspn(tempuser.name, "\n")] = 0;
+        tempuser.name[MAX_STRING - 1] = '\0'; // need to append null char
+
+        tempuser.borrowcount = 0;
+        while((token = strtok(NULL, "\t")) != NULL && tempuser.borrowcount < MAX_BORROWED){
+            tempuser.borrowedbooks[tempuser.borrowcount] = atoi(token);
+            tempuser.borrowcount++;
+        }
+        
         checkAndResize('u');
 
         users[usercount] = tempuser;
