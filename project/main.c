@@ -3,10 +3,7 @@
 #include <string.h>
 #include <windows.h>
 
-//TODO: Add strtok() functionality to addBook() -> super useful!
-//TODO: Disallow deletion of book when book.isborrowed!
-//TODO: Add padding and titles display in viewAllUsers()
-//TODO: Maybe make books see what user has borrowed them? Might be stupid
+//TODO: Add strtok() functionality to loadBooks() -> super useful!
 
 #define MAX_STRING 100
 #define MAX_ARRLEN 100
@@ -48,6 +45,7 @@ void updateBook();
 void deleteBook();
 void borrowBook();
 void returnBook();
+char* getTitleFromID(int id);
 
 //User Management
 void registerUser();
@@ -169,13 +167,16 @@ void viewAllUsers(){
     }
 
     printf("\n");
-
     for(int i = 0; i < usercount; i++){
-        printf("ID: %02d | Name: %s | Borrowed Books: ", users[i].ID, users[i].name);
-        for(int j = 0; j < users[i].borrowcount; i++){
-            printf("%d", users[i].borrowedbooks[j]);
+        char strID[10], strcount[3];
+        itoa(users[i].ID, strID, 10);
+        itoa(users[i].borrowcount, strcount, 3);
+        printf("ID: %-10s | Name: %-25s | Borrow Count: %-3s | Borrowed Books: ", strID,  users[i].name, strcount);
+
+        for(int j = 0; j < users[i].borrowcount; j++){
+            printf("%s", getTitleFromID(users[i].borrowedbooks[j]));
             if(j != users[i].borrowcount - 1){
-                printf(",");
+                printf(", ");
             }
         }
         printf("\n");
@@ -283,6 +284,11 @@ void deleteUser(){
 
     printf("Enter User ID >>");
     scanf(" %d", &tempID);
+
+    if(users[findMe(tempID, usercount, 'u')].borrowcount){
+        printf("Return this users books before deletion!");
+        return;
+    }
 
     if(deleteFromRecords(tempID, &usercount, 'u')){
         printf("User ID: %d deleted successfully!\n", tempID);
@@ -425,6 +431,11 @@ void deleteBook(){
 
     printf("Enter Book ISBN >>");
     scanf(" %d", &tempISBN);
+
+    if(books[findMe(tempISBN, bookcount, 'b')].isborrowed){
+        printf("Book must be returned before deletion!");
+        return;
+    }
 
     if(deleteFromRecords(tempISBN, &bookcount, 'b')){
         printf("ISBN %d deleted successfully!\n", tempISBN);
@@ -816,6 +827,10 @@ void checkAndResize(char mode){
 void freeAll(){
     free(books);
     free(users);
+}
+
+char* getTitleFromID(int id){
+    return books[findMe(id, bookcount, 'b')].title;
 }
 
 
