@@ -1,5 +1,3 @@
-100001	To Kill a Mockingbird	Harper Lee	0
-100002	The Great Gatsby	F. Scott Fitzgerald	0
 100003	Pride and Prejudice	Jane Austen	0
 100006	The Lord of the Rings	J.R.R. Tolkien	0
 100007	Brave New World	Aldous Huxley	0
@@ -21,5 +19,8 @@
 100018	War and Peace	Noah Simpson	0
 100009	Harry Potter and the Philosopher's Stone	J.K. Rowling	0
 100005	1984	George Orwell	0
-100004	Moby-Dong	Herman Melville	1
-100017	The Adventures of Huckleberry Finn	Mark Twain	1
+100004	Moby-Dick	Herman Melville	0
+100017	The Adventures of Huckleberry Finn	Mark Twain	0
+100001	To Kill a Mockingbird	Harper Lee	0
+100002	The Great Gatsby	F. Scott Fitzgerald	1
+100069	The Great Gnatsby	G. Bob Fitzpatrick	0
